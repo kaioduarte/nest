@@ -302,6 +302,11 @@ export class FastifyAdapter<
     if (statusCode) {
       fastifyReply.status(statusCode);
     }
+  
+    if (this.isResponseCompressed(fastifyReply)) {
+      return fastifyReply;
+    }
+
     if (body instanceof StreamableFile) {
       const streamHeaders = body.getHeaders();
       if (
@@ -505,6 +510,11 @@ export class FastifyAdapter<
     response: TRawResponse | TReply,
   ): response is TRawResponse {
     return !('status' in response);
+  }
+
+  private isResponseCompressed(response: TReply): boolean {
+    const responseEncoding = response.getHeader('Content-Encoding');
+    return responseEncoding && responseEncoding !== 'identity';
   }
 
   private registerJsonContentParser(rawBody?: boolean) {
